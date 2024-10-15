@@ -11,6 +11,7 @@ import { mintTokens } from "./mintTokens";
 import { onrampInr } from "./onrampInr";
 // import { sellNo } from "./sellNo";
 import { sellYesAndNo } from "./sellYesAndNo";
+import { getAdminBAlance } from "./getAdminBalance";
 
 export {
   buyYesAndNo,
@@ -24,4 +25,5 @@ export {
   mintTokens,
   onrampInr,
   sellYesAndNo,
+  getAdminBAlance,
 };

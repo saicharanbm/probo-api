@@ -14,7 +14,7 @@ interface orderDetails {
   orders: Record<string, number>;
 }
 interface orderCost {
-  [key: string]: orderDetails;
+  [key: number]: orderDetails;
 }
 type orderKey = "yes" | "no";
 interface orderType {
@@ -28,12 +28,15 @@ interface orderBook {
 //for STOCK_BALANCES
 
 interface stockQuantity {
-  quantity: number;
-  locked: number;
+  unmatched: number;
+  matched: number;
+}
+interface stockCost {
+  [key: number]: stockQuantity;
 }
 interface stockType {
-  yes: stockQuantity;
-  no: stockQuantity;
+  yes: stockCost;
+  no: stockCost;
 }
 interface stock {
   [key: string]: Partial<stockType>;
@@ -51,4 +54,17 @@ enum ResponseStatus {
   Conflict = 409,
 }
 
-export { balance, orderBook, stockBalance, ResponseStatus };
+interface StockCredentials {
+  owner: string; // Owner of the stock symbol
+
+  description: string;
+  createdAt: string; // Time of result announcement
+  endTime: string; // Time of result announcement
+
+  isActive: boolean;
+}
+interface StockDetails {
+  [key: string]: StockCredentials;
+}
+
+export { balance, orderBook, stockBalance, ResponseStatus, StockDetails };

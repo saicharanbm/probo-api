@@ -3,6 +3,7 @@ import {
   buyYesAndNo,
   createSymbol,
   createUser,
+  getAdminBAlance,
   getInrBalance,
   getInrBalances,
   getOrderBook,
@@ -25,6 +26,7 @@ router.route("/onramp/inr").post(onrampInr);
 router.route("/balance/stock/:userId").get(getStockBalance);
 router.route("/order/buy").post(buyYesAndNo);
 router.route("/order/sell").post(sellYesAndNo);
+router.route("/admin/balance").get(getAdminBAlance);
 // router.route("/order/buy/no").post(buyNo);
 // router.route("/order/sell/no").post(sellNo);
 router.route("/orderbook/:stockSymbol").get(viewOrderBook);
