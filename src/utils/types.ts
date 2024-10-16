@@ -11,12 +11,17 @@ interface balance {
 
 interface orderDetails {
   total: number;
-  orders: Record<string, number>;
+  orders: {
+    sell: Record<string, number>;
+    req: Record<string, number>;
+  };
 }
+// interface orderMode {
+//   [key: string]: orderDetails;
+// }
 interface orderCost {
   [key: number]: orderDetails;
 }
-type orderKey = "yes" | "no";
 interface orderType {
   yes: orderCost;
   no: orderCost;

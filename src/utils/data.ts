@@ -21,21 +21,22 @@ const ORDERBOOK: orderBook = {
       950: {
         total: 12,
         orders: {
-          user1: 2,
-          user2: 10,
+          sell: {},
+          req: { user1: 2, user2: 10 },
         },
       },
       850: {
         total: 6,
         orders: {
-          user1: 3,
-          user2: 3,
+          sell: {},
+          req: { user1: 3, user2: 3 },
         },
       },
       400: {
         total: 3,
         orders: {
-          user2: 3,
+          sell: {},
+          req: { user2: 3 },
         },
       },
     },
@@ -43,7 +44,8 @@ const ORDERBOOK: orderBook = {
       100: {
         total: 1,
         orders: {
-          user1: 1,
+          sell: {},
+          req: { user1: 1 },
         },
       },
     },
