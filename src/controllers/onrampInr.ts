@@ -15,7 +15,6 @@ const onrampInr = (req: Request, res: Response) => {
       .json({ error: "User with the provided userId does not exist." });
     return;
   }
-  console.log("hello");
   if (typeof amount != "number" && amount < 0) {
     res
       .status(ResponseStatus.BadRequest)
