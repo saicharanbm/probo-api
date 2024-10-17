@@ -13,235 +13,202 @@ const buyStock = (
 
   // Step 1: Check if the required quantity of stocks is present in the order book and assign
   // whatever is available to the user.
-  if (
-    // ORDERBOOK[stockSymbol] &&
-    // ORDERBOOK[stockSymbol][userStock] &&
-    ORDERBOOK[stockSymbol][userStock][price]
-  ) {
+  if (ORDERBOOK[stockSymbol]?.[userStock]?.[price]) {
     while (ORDERBOOK[stockSymbol][userStock][price] && requiredStocks > 0) {
-      //now check for the request stock if you find one then do the matching if you dont find one, you check the selling stock
-      //get the first user id of the required stock
+      // Check if there are "request" orders for matching
+      const requestOrders = ORDERBOOK[stockSymbol][userStock][price].orders.req;
 
-      if (ORDERBOOK[stockSymbol][userStock][price].orders.req) {
-        const requestOrders =
-          ORDERBOOK[stockSymbol][userStock][price].orders.req;
+      if (Object.keys(requestOrders).length > 0) {
+        console.log("Matching with request order");
         const userToBeMatched = Object.keys(requestOrders)[0];
-        if (requiredStocks >= requestOrders[userToBeMatched]) {
-          //available balance is the number of stocks that the user who bought the opposite stock has requested for.
-          const availableStocks = requestOrders[userToBeMatched];
+        const matchingStocksCount = Math.min(
+          requiredStocks,
+          requestOrders[userToBeMatched]
+        );
 
-          // Deduct the available stocks from requiredStocks
-          requiredStocks -= availableStocks;
+        // Deduct the stock cost from balance
+        INR_BALANCES[userId].balance -= price * matchingStocksCount;
+        ADMIN_Balance.balance += price * matchingStocksCount;
 
-          // Deduct the stock cost from balance
-          INR_BALANCES[userId].balance -= price * availableStocks;
-          ADMIN_Balance.balance += price * availableStocks;
+        // Deduct the locked stock amount from the matched user
+        INR_BALANCES[userToBeMatched].locked -=
+          oppositeStockPrice * matchingStocksCount;
+        ADMIN_Balance.balance += oppositeStockPrice * matchingStocksCount;
 
-          // Deduct the locked stock amount from the matched user
-          INR_BALANCES[userToBeMatched].locked -=
-            oppositeStockPrice * availableStocks;
-          ADMIN_Balance.balance += oppositeStockPrice * availableStocks;
+        // Deduct the matched stock count from the total stocks
+        ORDERBOOK[stockSymbol][userStock][price].total -= matchingStocksCount;
 
-          // Deduct the matched stock count from the total stocks
-          ORDERBOOK[stockSymbol][userStock][price].total -= availableStocks;
-
-          // Remove the matched user from the orders
+        // Remove the matched user from the orders or reduce the quantity
+        if (matchingStocksCount === requestOrders[userToBeMatched]) {
           delete requestOrders[userToBeMatched];
+        } else {
+          requestOrders[userToBeMatched] -= matchingStocksCount;
+        }
 
-          //now start updating the order book with respect to the matches that you have made.
-          if (!STOCK_BALANCES[userToBeMatched][stockSymbol]) {
-            STOCK_BALANCES[userToBeMatched][stockSymbol] = {
-              no: {},
-              yes: {},
-            };
-          }
-          if (!STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock]) {
-            STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock] = {};
-          }
+        // Deduct the matching stocks from requiredStocks
+        requiredStocks -= matchingStocksCount;
 
-          if (
-            !STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock][
-              oppositeStockPrice
-            ]
-          ) {
-            STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock][
-              oppositeStockPrice
-            ] = { unmatched: 0, matched: 0 };
-          }
-
-          let unmatched =
-            STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock][
-              oppositeStockPrice
-            ].unmatched;
-          let matched =
-            STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock][
-              oppositeStockPrice
-            ].matched;
-
-          unmatched -= availableStocks;
-          matched += availableStocks;
+        // Update stock balances for the matched user
+        if (!STOCK_BALANCES[userToBeMatched][stockSymbol]) {
+          STOCK_BALANCES[userToBeMatched][stockSymbol] = { yes: {}, no: {} };
+        }
+        if (!STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock]) {
+          STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock] = {};
+        }
+        if (
+          !STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock][
+            oppositeStockPrice
+          ]
+        ) {
           STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock][
             oppositeStockPrice
           ] = {
-            unmatched,
-            matched,
+            quantity: 0,
+            locked: 0,
           };
-        } else {
-          requestOrders[userToBeMatched] -= requiredStocks;
-
-          //since the required stock is less than the stock requested
-
-          // Deduct the stock cost from balance for the user who is buying the stock
-          INR_BALANCES[userId].balance -= price * requiredStocks;
-          ADMIN_Balance.balance += price * requiredStocks;
-
-          //Deduct the locked stock amount from the matched user
-          INR_BALANCES[userToBeMatched].locked -=
-            oppositeStockPrice * requiredStocks;
-          ADMIN_Balance.balance += oppositeStockPrice * requiredStocks;
-          //remove the matched stocks from the total in order book.
-          ORDERBOOK[stockSymbol][userStock][price].total -= requiredStocks;
-
-          // modify the stockbalance on the basis of stocked matched.
-          if (!STOCK_BALANCES[userToBeMatched][stockSymbol]) {
-            STOCK_BALANCES[userToBeMatched][stockSymbol] = {
-              no: {},
-              yes: {},
-            };
-          }
-          if (!STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock]) {
-            STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock] = {};
-          }
-
-          if (
-            !STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock][
-              oppositeStockPrice
-            ]
-          ) {
-            STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock][
-              oppositeStockPrice
-            ] = { unmatched: 0, matched: 0 };
-          }
-          let unmatched =
-            STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock]?.[
-              oppositeStockPrice
-            ].unmatched;
-          let matched =
-            STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock]?.[
-              oppositeStockPrice
-            ].matched;
-
-          unmatched -= requiredStocks;
-          matched += requiredStocks;
-
-          STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock]![
-            oppositeStockPrice
-          ] = {
-            unmatched,
-            matched,
-          };
-          requiredStocks = 0;
         }
+
+        STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock][
+          oppositeStockPrice
+        ].quantity += matchingStocksCount;
+
+        // Remove order if total stocks are exhausted
         if (ORDERBOOK[stockSymbol][userStock][price].total <= 0) {
           delete ORDERBOOK[stockSymbol][userStock][price];
         }
+      } else {
+        break; // No request orders, exit the loop
       }
     }
-    //Now since you have iterated through the request stoks now look for the selling stocks before making the request
+
+    // Check for matching with sell orders
     while (ORDERBOOK[stockSymbol][userStock][price] && requiredStocks > 0) {
-      if (ORDERBOOK[stockSymbol][userStock][price].orders.sell) {
-        const sellOrders = ORDERBOOK[stockSymbol][userStock][price].orders.sell;
+      const sellOrders = ORDERBOOK[stockSymbol][userStock][price].orders.sell;
+
+      if (Object.keys(sellOrders).length > 0) {
+        console.log("Matching with sell order");
         const userSellingTheStock = Object.keys(sellOrders)[0];
-        const availableStocks = sellOrders[userSellingTheStock];
-        if (requiredStocks >= availableStocks) {
-          requiredStocks -= availableStocks;
-          //award the seller with the buyers money
+        console.log("User selling the stock", userSellingTheStock);
+        //get the number  of stocks that are available to match
+        const matchingStocksCount = Math.min(
+          requiredStocks,
+          sellOrders[userSellingTheStock]
+        );
 
-          INR_BALANCES[userSellingTheStock].balance += price * availableStocks;
-          //deduct the price for the stock from the users account.
-          INR_BALANCES[userId].balance -= price * availableStocks;
+        // Award the seller with the buyer's money
+        // if (!INR_BALANCES[userSellingTheStock]) {
+        //   INR_BALANCES[userSellingTheStock] = {
+        //     balance: 0,
+        //     locked: 0,
+        //   };
+        // }
 
-          //now remove the stock from the stock balance of the seller and award it to the new buyer.
-          if (!STOCK_BALANCES[userSellingTheStock][stockSymbol][userStock]) {
-            STOCK_BALANCES[userSellingTheStock][stockSymbol][userStock] = {};
-          }
+        // // Deduct the stock cost from balance
+        // INR_BALANCES[userSellingTheStock].balance +=
+        //   price * matchingStocksCount;
+        // if (!INR_BALANCES[userId]) {
+        //   INR_BALANCES[userId] = {
+        //     balance: 0,
+        //     locked: 0,
+        //   };
+        // }
+        // Award the seller with the buyer's money
+        INR_BALANCES[userSellingTheStock].balance +=
+          price * matchingStocksCount;
+        INR_BALANCES[userId].balance -= price * matchingStocksCount;
+        //deduct the matched stock count from the total stocks
+        ORDERBOOK[stockSymbol][userStock][price].total -= matchingStocksCount;
+
+        // Deduct the matched stock count from the seller record
+        sellOrders[userSellingTheStock] -= matchingStocksCount;
+
+        // Deduct the stock from the seller's stock balance and release locked stocks
+
+        if (
+          STOCK_BALANCES[userSellingTheStock] &&
+          STOCK_BALANCES[userSellingTheStock][stockSymbol] &&
+          STOCK_BALANCES[userSellingTheStock][stockSymbol][userStock]
+        ) {
           STOCK_BALANCES[userSellingTheStock][stockSymbol][userStock][
             price
-          ].matched -= availableStocks;
-
-          //award the stock to the buyer this will be done out side of the loop so that we can do it for all the stocks pought at a time.
-          // if (!STOCK_BALANCES[userId][stockSymbol][userStock]) {
-          //   STOCK_BALANCES[userId][stockSymbol][userStock] = {};
-          // }
-          // if (!STOCK_BALANCES[userId][stockSymbol][userStock][price]) {
-          //   STOCK_BALANCES[userId][stockSymbol][userStock][price] = {
-          //     matched: 0,
-          //     unmatched: 0,
-          //   };
-          // }
-          // STOCK_BALANCES[userId][stockSymbol][userStock][price].matched +=
-          //   availableStocks;
-          //remove the selling order from the order book.
-          sellOrders[userSellingTheStock] = 0;
-          //delete the user record from the sell in the orderbook
-          delete sellOrders[userSellingTheStock];
-        } else {
-          // since there are more selling order than the requested stocks what we will do is
-          //deduct the selling order with the required stocks.
-          sellOrders[userSellingTheStock] -= requiredStocks;
-
-          //then award the user who sold the stocks.
-          INR_BALANCES[userSellingTheStock].balance += price * requiredStocks;
-
-          //now deduct the stock price for the quantity of stock bought from the buyer.
-          INR_BALANCES[userId].balance -= price * requiredStocks;
-
-          //now remove the stock from the stock balance of the seller and award it to the new buyer.
-          if (!STOCK_BALANCES[userSellingTheStock][stockSymbol][userStock]) {
-            STOCK_BALANCES[userSellingTheStock][stockSymbol][userStock] = {};
+          ].locked -= matchingStocksCount;
+          if (
+            STOCK_BALANCES[userSellingTheStock][stockSymbol][userStock][price]
+              .locked === 0 &&
+            STOCK_BALANCES[userSellingTheStock][stockSymbol][userStock][price]
+              .quantity === 0
+          ) {
+            delete STOCK_BALANCES[userSellingTheStock][stockSymbol][userStock][
+              price
+            ];
           }
-          STOCK_BALANCES[userSellingTheStock][stockSymbol][userStock][
-            price
-          ].matched -= requiredStocks;
-
-          // Since we are able to fulfill all the requested stocks we will change it to 0.
-          requiredStocks = 0;
         }
+
+        // if sellers stock balance for this stock type at this price is 0, remove it
+
+        //award the matched stock to the buyer
+
+        // if (!STOCK_BALANCES[userId]) {
+        //   STOCK_BALANCES[userId] = {};
+        // }
+        // if (!STOCK_BALANCES[userId][stockSymbol]) {
+        //   STOCK_BALANCES[userId][stockSymbol] = { yes: {}, no: {} };
+        // }
+        // if (!STOCK_BALANCES[userId][stockSymbol][userStock]) {
+        //   STOCK_BALANCES[userId][stockSymbol][userStock] = {};
+        // }
+        // if (!STOCK_BALANCES[userId][stockSymbol][userStock][price]) {
+        //   STOCK_BALANCES[userId][stockSymbol][userStock][price] = {
+        //     quantity: 0,
+        //     locked: 0,
+        //   };
+        // }
+        // STOCK_BALANCES[userId][stockSymbol][userStock][price].quantity +=
+        //   matchingStocksCount;
+
+        if (sellOrders[userSellingTheStock] === 0) {
+          delete sellOrders[userSellingTheStock];
+        }
+
+        // Deduct the matching stocks from requiredStocks
+        requiredStocks -= matchingStocksCount;
+
+        // Remove order if total stocks are exhausted
+        if (ORDERBOOK[stockSymbol][userStock][price].total <= 0) {
+          delete ORDERBOOK[stockSymbol][userStock][price];
+        }
+      } else {
+        break; // No sell orders, exit the loop
       }
     }
-    // Update stock balances for the current user after matching thestocks
 
+    // Update stock balances for the current user after matching the stocks
     if (!STOCK_BALANCES[userId]) {
       STOCK_BALANCES[userId] = {};
     }
     if (!STOCK_BALANCES[userId][stockSymbol]) {
-      STOCK_BALANCES[userId][stockSymbol] = { no: {}, yes: {} };
+      STOCK_BALANCES[userId][stockSymbol] = { yes: {}, no: {} };
     }
     if (!STOCK_BALANCES[userId][stockSymbol][userStock]) {
       STOCK_BALANCES[userId][stockSymbol][userStock] = {};
     }
     if (!STOCK_BALANCES[userId][stockSymbol][userStock][price]) {
       STOCK_BALANCES[userId][stockSymbol][userStock][price] = {
-        unmatched: 0,
-        matched: 0,
+        quantity: 0,
+        locked: 0,
       };
     }
-    STOCK_BALANCES[userId][stockSymbol][userStock][price].matched +=
+
+    STOCK_BALANCES[userId][stockSymbol][userStock][price].quantity +=
       quantity - requiredStocks;
   }
-  if (requiredStocks > 0) {
-    // Now add a request entry in the order book for the opposite stock
-    const requiredMatchPrice = 1000 - price;
 
-    if (
-      ORDERBOOK[stockSymbol] &&
-      ORDERBOOK[stockSymbol][oppositeStock] &&
-      ORDERBOOK[stockSymbol][oppositeStock][requiredMatchPrice]
-    ) {
-      const total =
-        ORDERBOOK[stockSymbol][oppositeStock][requiredMatchPrice].total +
+  // If there are still required stocks left, place a new request order in the order book for the opposite stock at the required match price
+  if (requiredStocks > 0) {
+    const requiredMatchPrice = 1000 - price;
+    if (ORDERBOOK[stockSymbol]?.[oppositeStock]?.[requiredMatchPrice]) {
+      ORDERBOOK[stockSymbol][oppositeStock][requiredMatchPrice].total +=
         requiredStocks;
-      ORDERBOOK[stockSymbol][oppositeStock][requiredMatchPrice].total = total;
 
       if (
         userId in
@@ -260,30 +227,12 @@ const buyStock = (
         total: requiredStocks,
         orders: {
           sell: {},
-          req: {
-            [userId]: requiredStocks,
-          },
+          req: { [userId]: requiredStocks },
         },
       };
     }
 
-    //now make an entry into the stock balance for the opposite user
-    if (!STOCK_BALANCES[userId][stockSymbol]) {
-      STOCK_BALANCES[userId][stockSymbol] = { no: {}, yes: {} };
-    }
-    if (!STOCK_BALANCES[userId][stockSymbol][userStock]) {
-      STOCK_BALANCES[userId][stockSymbol][userStock] = {};
-    }
-    if (!STOCK_BALANCES[userId][stockSymbol][userStock][price]) {
-      STOCK_BALANCES[userId][stockSymbol][userStock][price] = {
-        unmatched: 0,
-        matched: 0,
-      };
-    }
-    STOCK_BALANCES[userId][stockSymbol][userStock][price].unmatched +=
-      requiredStocks;
-
-    //deduct lock the user balance
+    // Lock the user's balance
     INR_BALANCES[userId].locked += requiredStocks * price;
     INR_BALANCES[userId].balance -= requiredStocks * price;
   }

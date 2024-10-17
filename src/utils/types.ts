@@ -33,8 +33,8 @@ interface orderBook {
 //for STOCK_BALANCES
 
 interface stockQuantity {
-  unmatched: number;
-  matched: number;
+  quantity: number;
+  locked: number;
 }
 interface stockCost {
   [key: number]: stockQuantity;

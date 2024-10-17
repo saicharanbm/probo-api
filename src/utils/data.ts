@@ -57,22 +57,22 @@ const STOCK_BALANCES: stockBalance = {
     BTC_USDT_10_Oct_2024_9_30: {
       yes: {
         900: {
-          unmatched: 1,
-          matched: 0,
+          quantity: 1,
+          locked: 0,
         },
         400: {
-          unmatched: 0,
-          matched: 4,
+          quantity: 0,
+          locked: 4,
         },
       },
       no: {
         50: {
-          unmatched: 2,
-          matched: 0,
+          quantity: 2,
+          locked: 0,
         },
         150: {
-          unmatched: 3,
-          matched: 0,
+          quantity: 3,
+          locked: 0,
         },
       },
     },
@@ -81,16 +81,16 @@ const STOCK_BALANCES: stockBalance = {
     BTC_USDT_10_Oct_2024_9_30: {
       no: {
         600: {
-          unmatched: 3,
-          matched: 4,
+          quantity: 3,
+          locked: 4,
         },
         50: {
-          unmatched: 10,
-          matched: 0,
+          quantity: 10,
+          locked: 0,
         },
         150: {
-          unmatched: 3,
-          matched: 0,
+          quantity: 3,
+          locked: 0,
         },
       },
     },

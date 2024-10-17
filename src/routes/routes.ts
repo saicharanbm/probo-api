@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   buyYesAndNo,
+  cancelOrder,
   createSymbol,
   createUser,
   getAdminBAlance,
@@ -26,6 +27,7 @@ router.route("/onramp/inr").post(onrampInr);
 router.route("/balance/stock/:userId").get(getStockBalance);
 router.route("/order/buy").post(buyYesAndNo);
 router.route("/order/sell").post(sellYesAndNo);
+router.route("/order/cancel").post(cancelOrder);
 router.route("/admin/balance").get(getAdminBAlance);
 // router.route("/order/buy/no").post(buyNo);
 // router.route("/order/sell/no").post(sellNo);

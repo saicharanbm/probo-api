@@ -16,16 +16,16 @@ const rewardWinners = (stockSymbol: string, result: "yes" | "no") => {
         for (const stockPrice in stockWinnerTypeData) {
           const stockDetails = stockWinnerTypeData[stockPrice];
           if (stockDetails) {
-            // This is where you can safely access stockDetails.matched and stockDetails.unmatched
-            const { matched, unmatched } = stockDetails;
+            // This is where you can safely access stockDetails.matched and stockDetails.locked
+            const { quantity, locked } = stockDetails;
 
-            if (matched > 0) {
-              ADMIN_Balance.balance -= matched * 1000;
-              INR_BALANCES[userId].balance += matched * 1000;
+            if (quantity > 0) {
+              ADMIN_Balance.balance -= quantity * 1000;
+              INR_BALANCES[userId].balance += quantity * 1000;
             }
-            if (unmatched > 0) {
-              INR_BALANCES[userId].locked -= unmatched * Number(stockPrice);
-              INR_BALANCES[userId].balance += unmatched * Number(stockPrice);
+            if (locked > 0) {
+              INR_BALANCES[userId].locked -= locked * Number(stockPrice);
+              INR_BALANCES[userId].balance += locked * Number(stockPrice);
             }
           }
         }
@@ -35,12 +35,12 @@ const rewardWinners = (stockSymbol: string, result: "yes" | "no") => {
         for (const stockPrice in stockLoserTypeData) {
           const stockDetails = stockLoserTypeData[stockPrice];
           if (stockDetails) {
-            // This is where you can safely access stockDetails.matched and stockDetails.unmatched
-            const { matched, unmatched } = stockDetails;
+            // This is where you can safely access stockDetails.matched and stockDetails.locked
+            const { quantity, locked } = stockDetails;
 
-            if (unmatched > 0) {
-              INR_BALANCES[userId].locked -= unmatched * Number(stockPrice);
-              INR_BALANCES[userId].balance += unmatched * Number(stockPrice);
+            if (locked > 0) {
+              INR_BALANCES[userId].locked -= locked * Number(stockPrice);
+              INR_BALANCES[userId].balance += locked * Number(stockPrice);
             }
           }
         }
