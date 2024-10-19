@@ -50,27 +50,17 @@ const buyStock = (
 
         // Update stock balances for the matched user
         if (!STOCK_BALANCES[userToBeMatched][stockSymbol]) {
-          STOCK_BALANCES[userToBeMatched][stockSymbol] = { yes: {}, no: {} };
+          STOCK_BALANCES[userToBeMatched][stockSymbol] = {};
         }
         if (!STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock]) {
-          STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock] = {};
-        }
-        if (
-          !STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock][
-            oppositeStockPrice
-          ]
-        ) {
-          STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock][
-            oppositeStockPrice
-          ] = {
+          STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock] = {
             quantity: 0,
             locked: 0,
           };
         }
-
-        STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock][
-          oppositeStockPrice
-        ].quantity += matchingStocksCount;
+        //award the stocks to the user who got matched
+        STOCK_BALANCES[userToBeMatched][stockSymbol][oppositeStock].quantity +=
+          matchingStocksCount;
 
         // Remove order if total stocks are exhausted
         if (ORDERBOOK[stockSymbol][userStock][price].total <= 0) {
@@ -96,23 +86,6 @@ const buyStock = (
         );
 
         // Award the seller with the buyer's money
-        // if (!INR_BALANCES[userSellingTheStock]) {
-        //   INR_BALANCES[userSellingTheStock] = {
-        //     balance: 0,
-        //     locked: 0,
-        //   };
-        // }
-
-        // // Deduct the stock cost from balance
-        // INR_BALANCES[userSellingTheStock].balance +=
-        //   price * matchingStocksCount;
-        // if (!INR_BALANCES[userId]) {
-        //   INR_BALANCES[userId] = {
-        //     balance: 0,
-        //     locked: 0,
-        //   };
-        // }
-        // Award the seller with the buyer's money
         INR_BALANCES[userSellingTheStock].balance +=
           price * matchingStocksCount;
         INR_BALANCES[userId].balance -= price * matchingStocksCount;
@@ -129,42 +102,27 @@ const buyStock = (
           STOCK_BALANCES[userSellingTheStock][stockSymbol] &&
           STOCK_BALANCES[userSellingTheStock][stockSymbol][userStock]
         ) {
-          STOCK_BALANCES[userSellingTheStock][stockSymbol][userStock][
-            price
-          ].locked -= matchingStocksCount;
+          STOCK_BALANCES[userSellingTheStock][stockSymbol][userStock].locked -=
+            matchingStocksCount;
           if (
-            STOCK_BALANCES[userSellingTheStock][stockSymbol][userStock][price]
+            STOCK_BALANCES[userSellingTheStock][stockSymbol][userStock]
               .locked === 0 &&
-            STOCK_BALANCES[userSellingTheStock][stockSymbol][userStock][price]
+            STOCK_BALANCES[userSellingTheStock][stockSymbol][userStock]
               .quantity === 0
           ) {
-            delete STOCK_BALANCES[userSellingTheStock][stockSymbol][userStock][
-              price
-            ];
+            delete STOCK_BALANCES[userSellingTheStock][stockSymbol][userStock];
+            if (
+              Object.keys(STOCK_BALANCES[userSellingTheStock][stockSymbol])
+                .length <= 0
+            ) {
+              delete STOCK_BALANCES[userSellingTheStock][stockSymbol];
+            }
           }
         }
 
         // if sellers stock balance for this stock type at this price is 0, remove it
 
-        //award the matched stock to the buyer
-
-        // if (!STOCK_BALANCES[userId]) {
-        //   STOCK_BALANCES[userId] = {};
-        // }
-        // if (!STOCK_BALANCES[userId][stockSymbol]) {
-        //   STOCK_BALANCES[userId][stockSymbol] = { yes: {}, no: {} };
-        // }
-        // if (!STOCK_BALANCES[userId][stockSymbol][userStock]) {
-        //   STOCK_BALANCES[userId][stockSymbol][userStock] = {};
-        // }
-        // if (!STOCK_BALANCES[userId][stockSymbol][userStock][price]) {
-        //   STOCK_BALANCES[userId][stockSymbol][userStock][price] = {
-        //     quantity: 0,
-        //     locked: 0,
-        //   };
-        // }
-        // STOCK_BALANCES[userId][stockSymbol][userStock][price].quantity +=
-        //   matchingStocksCount;
+        //award the matched stock to the buyer it will be done at the end for both req and sell stocks at once.
 
         if (sellOrders[userSellingTheStock] === 0) {
           delete sellOrders[userSellingTheStock];
@@ -187,19 +145,16 @@ const buyStock = (
       STOCK_BALANCES[userId] = {};
     }
     if (!STOCK_BALANCES[userId][stockSymbol]) {
-      STOCK_BALANCES[userId][stockSymbol] = { yes: {}, no: {} };
+      STOCK_BALANCES[userId][stockSymbol] = {};
     }
     if (!STOCK_BALANCES[userId][stockSymbol][userStock]) {
-      STOCK_BALANCES[userId][stockSymbol][userStock] = {};
-    }
-    if (!STOCK_BALANCES[userId][stockSymbol][userStock][price]) {
-      STOCK_BALANCES[userId][stockSymbol][userStock][price] = {
+      STOCK_BALANCES[userId][stockSymbol][userStock] = {
         quantity: 0,
         locked: 0,
       };
     }
 
-    STOCK_BALANCES[userId][stockSymbol][userStock][price].quantity +=
+    STOCK_BALANCES[userId][stockSymbol][userStock].quantity +=
       quantity - requiredStocks;
   }
 

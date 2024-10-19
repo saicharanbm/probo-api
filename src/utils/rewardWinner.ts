@@ -14,7 +14,7 @@ const rewardWinners = (stockSymbol: string, result: "yes" | "no") => {
         const stockWinnerTypeData = winningStock[result];
         if (!stockWinnerTypeData) continue;
         for (const stockPrice in stockWinnerTypeData) {
-          const stockDetails = stockWinnerTypeData[stockPrice];
+          const stockDetails = stockWinnerTypeData;
           if (stockDetails) {
             // This is where you can safely access stockDetails.matched and stockDetails.locked
             const { quantity, locked } = stockDetails;
@@ -33,7 +33,7 @@ const rewardWinners = (stockSymbol: string, result: "yes" | "no") => {
         const stockLoserTypeData = winningStock[losingStock];
         if (!stockLoserTypeData) continue;
         for (const stockPrice in stockLoserTypeData) {
-          const stockDetails = stockLoserTypeData[stockPrice];
+          const stockDetails = stockLoserTypeData;
           if (stockDetails) {
             // This is where you can safely access stockDetails.matched and stockDetails.locked
             const { quantity, locked } = stockDetails;

@@ -56,42 +56,22 @@ const STOCK_BALANCES: stockBalance = {
   user1: {
     BTC_USDT_10_Oct_2024_9_30: {
       yes: {
-        900: {
-          quantity: 1,
-          locked: 0,
-        },
-        400: {
-          quantity: 0,
-          locked: 4,
-        },
+        quantity: 1,
+        locked: 0,
       },
+
       no: {
-        50: {
-          quantity: 2,
-          locked: 0,
-        },
-        150: {
-          quantity: 3,
-          locked: 0,
-        },
+        quantity: 3,
+        locked: 0,
       },
     },
   },
+
   user2: {
     BTC_USDT_10_Oct_2024_9_30: {
       no: {
-        600: {
-          quantity: 3,
-          locked: 4,
-        },
-        50: {
-          quantity: 10,
-          locked: 0,
-        },
-        150: {
-          quantity: 3,
-          locked: 0,
-        },
+        quantity: 3,
+        locked: 4,
       },
     },
   },
@@ -104,11 +84,10 @@ const STOCK_DETAILS: StockDetails = {
     description: "This is a description",
     createdAt: "2024-10-10T09:30:00Z",
     endTime: "2024-10-10T09:30:00Z", // Time of result announcement
-
     isActive: true,
   },
 };
-let ADMIN_Balance: Record<string, number> = {
+const ADMIN_Balance: Record<string, number> = {
   balance: 4000,
 };
 

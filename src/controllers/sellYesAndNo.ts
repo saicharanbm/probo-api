@@ -44,22 +44,15 @@ const sellYesAndNo = (req: Request, res: Response) => {
     });
     return;
   }
-  if (!STOCK_BALANCES[userId][stockSymbol][stockType][price]) {
-    res.status(ResponseStatus.NotFound).json({
-      error: `User ${userId} does not have any stock of type ${stockType} at the price ${price} to sell .`,
-    });
-    return;
-  }
-  if (
-    STOCK_BALANCES[userId][stockSymbol][stockType][price].quantity < quantity
-  ) {
+
+  if (STOCK_BALANCES[userId][stockSymbol][stockType].quantity < quantity) {
     res.status(ResponseStatus.BadRequest).json({
       error: "You dont have enought quantity of stocks to sell.",
     });
     return;
   }
-  STOCK_BALANCES[userId][stockSymbol][stockType][price].quantity -= quantity;
-  STOCK_BALANCES[userId][stockSymbol][stockType][price].locked += quantity;
+  STOCK_BALANCES[userId][stockSymbol][stockType].quantity -= quantity;
+  STOCK_BALANCES[userId][stockSymbol][stockType].locked += quantity;
 
   sellStock(userId, stockSymbol, stockType, price, quantity);
   res

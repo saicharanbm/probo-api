@@ -36,12 +36,10 @@ interface stockQuantity {
   quantity: number;
   locked: number;
 }
-interface stockCost {
-  [key: number]: stockQuantity;
-}
+
 interface stockType {
-  yes: stockCost;
-  no: stockCost;
+  yes: stockQuantity;
+  no: stockQuantity;
 }
 interface stock {
   [key: string]: Partial<stockType>;
