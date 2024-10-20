@@ -1,4 +1,6 @@
+import { createClientOrderBook } from "./createClientOrderBook";
 import { INR_BALANCES, ORDERBOOK, STOCK_BALANCES } from "./data";
+import { publishDataToPubSub } from "./publishDataToPubSub";
 
 const sellStock = (
   userId: string,
@@ -118,6 +120,8 @@ const sellStock = (
       ORDERBOOK[stockSymbol][stockType][price].orders.sell[userId] += quantity;
     }
   }
+  const clientOrderBook = createClientOrderBook(ORDERBOOK[stockSymbol]);
+  publishDataToPubSub(clientOrderBook, stockSymbol);
 };
 
 export { sellStock };

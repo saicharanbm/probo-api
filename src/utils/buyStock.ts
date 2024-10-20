@@ -1,4 +1,6 @@
+import { createClientOrderBook } from "./createClientOrderBook";
 import { ORDERBOOK, INR_BALANCES, STOCK_BALANCES, ADMIN_Balance } from "./data";
+import { publishDataToPubSub } from "./publishDataToPubSub";
 
 const buyStock = (
   userId: string,
@@ -191,6 +193,8 @@ const buyStock = (
     INR_BALANCES[userId].locked += requiredStocks * price;
     INR_BALANCES[userId].balance -= requiredStocks * price;
   }
+  const clientOrderBook = createClientOrderBook(ORDERBOOK[stockSymbol]);
+  publishDataToPubSub(clientOrderBook, stockSymbol);
 };
 
 export { buyStock };

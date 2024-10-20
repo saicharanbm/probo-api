@@ -5,6 +5,7 @@ import {
   createSymbol,
   createUser,
   getAdminBAlance,
+  getEvents,
   getInrBalance,
   getInrBalances,
   getOrderBook,
@@ -33,5 +34,6 @@ router.route("/admin/balance").get(getAdminBAlance);
 // router.route("/order/sell/no").post(sellNo);
 router.route("/orderbook/:stockSymbol").get(viewOrderBook);
 router.route("/trade/mint").post(mintTokens);
+router.route("/events").get(getEvents);
 
 export { router };

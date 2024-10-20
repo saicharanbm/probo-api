@@ -13,6 +13,7 @@ import { onrampInr } from "./onrampInr";
 import { sellYesAndNo } from "./sellYesAndNo";
 import { getAdminBAlance } from "./getAdminBalance";
 import { cancelOrder } from "./cancelOrder";
+import { getEvents } from "./getEvents";
 
 export {
   buyYesAndNo,
@@ -28,4 +29,5 @@ export {
   sellYesAndNo,
   getAdminBAlance,
   cancelOrder,
+  getEvents,
 };

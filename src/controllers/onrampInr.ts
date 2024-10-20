@@ -3,6 +3,7 @@ import { ResponseStatus } from "../utils/types";
 import { INR_BALANCES } from "../utils/data";
 const onrampInr = (req: Request, res: Response) => {
   const { userId, amount } = req.body;
+  console.log(userId, amount);
   if (!userId || !amount) {
     res
       .status(ResponseStatus.BadRequest)
