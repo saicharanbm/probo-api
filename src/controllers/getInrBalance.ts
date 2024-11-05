@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
+import { generateUniqueId } from "../utils/generateUniqueId";
+import { publisherClient } from "../utils/createPublisherAndSubscriberClient";
 import { ResponseStatus } from "../utils/types";
-import { INR_BALANCES } from "../utils/data";
-const getInrBalance = (req: Request, res: Response) => {
+import { waitForTheResponse } from "../utils/waitForTheResponse";
+const getInrBalance = async (req: Request, res: Response) => {
   const { userId } = req.params;
   if (!userId) {
     res
@@ -9,14 +11,31 @@ const getInrBalance = (req: Request, res: Response) => {
       .json({ error: "Please provide a userId" });
     return;
   }
-  if (!INR_BALANCES[userId]) {
-    res
-      .status(ResponseStatus.BadRequest)
-      .json({ error: "User with the provided userId does not exist." });
-    return;
-  }
 
-  res.status(ResponseStatus.Success).json(INR_BALANCES[userId]);
+  const id = generateUniqueId();
+  waitForTheResponse(id)
+    .then((data) => {
+      res.status(data.statusCode).send(data.response);
+    })
+    .catch((error) => {
+      res.status(400).send(error);
+    });
+  publisherClient.lPush(
+    "requests",
+    JSON.stringify({ id, type: "getUserBalance", data: { userId } })
+  );
+  // try {
+  //   const data: {
+  //     response: { balance: number; locked: number } | { error: string };
+  //     statusCode: ResponseStatus;
+  //   } = (await waitForTheResponse(id)) as {
+  //     response: { balance: number; locked: number } | { error: string };
+  //     statusCode: ResponseStatus;
+  //   };
+  //   res.status(data.statusCode).send(data.response);
+  // } catch (error) {
+  //   res.status(400).send(error);
+  // }
 };
 
 export { getInrBalance };

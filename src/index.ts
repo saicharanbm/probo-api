@@ -1,7 +1,7 @@
 import express from "express";
 import { router } from "./routes/routes";
 import cors from "cors";
-import { connectToRedis } from "./utils/publishDataToPubSub";
+import { connectToRedis } from "./utils/createPublisherAndSubscriberClient";
 const app = express();
 app.use(cors());
 app.use(express.json());

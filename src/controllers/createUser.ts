@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
 import { ResponseStatus } from "../utils/types";
-import { INR_BALANCES, STOCK_BALANCES } from "../utils/data";
-const createUser = (req: Request, res: Response) => {
+import { generateUniqueId } from "../utils/generateUniqueId";
+import { publisherClient } from "../utils/createPublisherAndSubscriberClient";
+import { waitForTheResponse } from "../utils/waitForTheResponse";
+const createUser = async (req: Request, res: Response) => {
   const { userId } = req.params;
   if (!userId) {
     res
@@ -9,19 +11,18 @@ const createUser = (req: Request, res: Response) => {
       .json({ error: "Please provide the userId." });
     return;
   }
-  if (INR_BALANCES[userId]) {
-    res
-      .status(ResponseStatus.Conflict)
-      .json({ error: "User with this id already exists." });
-    return;
-  }
-  INR_BALANCES[userId] = {
-    balance: 0,
-    locked: 0,
-  };
-  STOCK_BALANCES[userId] = {};
-
-  res.status(ResponseStatus.Success).json({ message: "New user created." });
+  const id = generateUniqueId();
+  waitForTheResponse(id)
+    .then((data) => {
+      res.status(data.statusCode).send(data.response);
+    })
+    .catch((error) => {
+      res.status(400).send(error);
+    });
+  publisherClient.lPush(
+    "requests",
+    JSON.stringify({ id, type: "createUser", data: { userId } })
+  );
 };
 
 export { createUser };

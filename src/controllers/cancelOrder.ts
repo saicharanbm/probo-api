@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
 import { ResponseStatus } from "../utils/types";
-import { INR_BALANCES, ORDERBOOK, STOCK_BALANCES } from "../utils/data";
-const cancelOrder = (req: Request, res: Response) => {
+import { generateUniqueId } from "../utils/generateUniqueId";
+import { publisherClient } from "../utils/createPublisherAndSubscriberClient";
+import { waitForTheResponse } from "../utils/waitForTheResponse";
+const cancelOrder = async (req: Request, res: Response) => {
   const { userId, stockSymbol, stockType, quantity, price } = req.body;
   if (
     !userId ||
@@ -21,19 +23,6 @@ const cancelOrder = (req: Request, res: Response) => {
       .json({ error: "Please provide all the details." });
     return;
   }
-
-  if (!INR_BALANCES[userId]) {
-    res
-      .status(ResponseStatus.BadRequest)
-      .json({ error: `User with this userID: ${userId} does not exist.` });
-    return;
-  }
-  if (!ORDERBOOK[stockSymbol]) {
-    res.status(ResponseStatus.BadRequest).json({
-      error: `Stock Symbol: ${stockSymbol} is either expired or not present.`,
-    });
-    return;
-  }
   if (!(stockType == "yes" || stockType === "no")) {
     res.status(ResponseStatus.BadRequest).json({
       error: `Stock Type should be yes or no.`,
@@ -43,63 +32,41 @@ const cancelOrder = (req: Request, res: Response) => {
   const oppositeStockType = stockType === "yes" ? "no" : "yes";
   const oppositeStockPrice = 1000 - price;
 
-  if (
-    !ORDERBOOK[stockSymbol][oppositeStockType] ||
-    !ORDERBOOK[stockSymbol][oppositeStockType][oppositeStockPrice] ||
-    !ORDERBOOK[stockSymbol][oppositeStockType][oppositeStockPrice].orders.req
-  ) {
-    res
-      .status(ResponseStatus.BadRequest)
-      .json({ error: "There is no Unmatched stocks for this stock." });
-    return;
-  }
-  if (
-    !ORDERBOOK[stockSymbol][oppositeStockType][oppositeStockPrice].orders.req[
-      userId
-    ]
-  ) {
-    res.status(ResponseStatus.BadRequest).json({
-      error: `User ${userId} does not have any stocks at this price to sell.`,
+  const id = generateUniqueId();
+  waitForTheResponse(id)
+    .then((data) => {
+      res.status(data.statusCode).send(data.response);
+    })
+    .catch((error) => {
+      res.status(400).send(error);
     });
-    return;
-  }
-  if (
-    ORDERBOOK[stockSymbol][oppositeStockType][oppositeStockPrice].orders.req[
-      userId
-    ] < quantity
-  ) {
-    res
-      .status(ResponseStatus.BadRequest)
-      .json({ error: `User ${userId} does not have the suffecient stocks.` });
-    return;
-  }
-  ORDERBOOK[stockSymbol][oppositeStockType][oppositeStockPrice].orders.req[
-    userId
-  ] -= quantity;
+  publisherClient.lPush(
+    "requests",
+    JSON.stringify({
+      id,
+      type: "cancelOrder",
+      data: {
+        userId,
+        stockSymbol,
+        quantity,
+        price,
+        oppositeStockType,
+        oppositeStockPrice,
+      },
+    })
+  );
 
-  ORDERBOOK[stockSymbol][oppositeStockType][oppositeStockPrice].total -=
-    quantity;
-  if (
-    ORDERBOOK[stockSymbol][oppositeStockType][oppositeStockPrice].orders.req[
-      userId
-    ] === 0
-  ) {
-    delete ORDERBOOK[stockSymbol][oppositeStockType][oppositeStockPrice].orders
-      .req[userId];
-  }
-  if (
-    ORDERBOOK[stockSymbol][oppositeStockType][oppositeStockPrice].total === 0
-  ) {
-    delete ORDERBOOK[stockSymbol][oppositeStockType][oppositeStockPrice];
-  }
-  // relese the locked amount to the users balance
-  INR_BALANCES[userId].locked -= quantity * price;
-  INR_BALANCES[userId].balance += quantity * price;
-
-  //
-
-  res
-    .status(ResponseStatus.Success)
-    .json({ message: "Requested stocks cancelled successfully." });
+  // try {
+  //   const data: {
+  //     response: { message: string } | { error: string };
+  //     statusCode: ResponseStatus;
+  //   } = (await waitForTheResponse(id)) as {
+  //     response: { message: string } | { error: string };
+  //     statusCode: ResponseStatus;
+  //   };
+  //   res.status(data.statusCode).send(data.response);
+  // } catch (error) {
+  //   res.status(400).send(error);
+  // }
 };
 export { cancelOrder };

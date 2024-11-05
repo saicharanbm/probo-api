@@ -30,8 +30,6 @@ router.route("/order/buy").post(buyYesAndNo);
 router.route("/order/sell").post(sellYesAndNo);
 router.route("/order/cancel").post(cancelOrder);
 router.route("/admin/balance").get(getAdminBAlance);
-// router.route("/order/buy/no").post(buyNo);
-// router.route("/order/sell/no").post(sellNo);
 router.route("/orderbook/:stockSymbol").get(viewOrderBook);
 router.route("/trade/mint").post(mintTokens);
 router.route("/events").get(getEvents);
